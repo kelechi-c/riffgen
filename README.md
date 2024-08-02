@@ -1,6 +1,6 @@
 ## riffgen [wip]
 
-A tiny generative model for music. Inspired by OpenAI Jukebox also a half implementation of the paper :)
+A tiny generative model for music. 
 
 #### architecture
-Autoregresssive model, consisting of a VQVAE(snac for tokenization) and Sparse Transformer. 
+currently experimenting both DiTs(used in Stabiltiy AI's Stable Audio) and Transformers/SLMs(used in Meta's MusicGen)

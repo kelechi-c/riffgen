@@ -18,23 +18,20 @@ def init_driver(link: str):
     return driver
 
 
-def get_imagefile_name(link: str):
+def audiofile_name(link: str):
     fn = os.path.basename(link)
-    file_name = fn.split(".")[0]
+    file_name = fn.lower()
 
     return file_name
 
 
-def download_element(file_link, k, image_folder):
+def download_element(file_link, k, folder):
     response = requests.get(file_link, stream=True)
-    title = get_imagefile_name(file_link)
-    file_path = f"{title}_{k}.png"
-    file_path = os.path.join(
-        image_folder,
-    )
+    title = audiofile_name(file_link)
+    file_path = f"{title}_{k}.wav"
+    file_path = os.path.join(folder, file_path)
 
     with open(file_path, "wb") as file:
         file.write(response.content)
         response.raw.decode_content = True
-
         shutil.copyfileobj(response.raw, file)

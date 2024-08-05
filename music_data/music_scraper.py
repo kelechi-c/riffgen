@@ -17,6 +17,35 @@ class FreeSoundMusicScraper:
         ]
         self.filelinks = []
 
+    def page_crawler(self):
+        # for each page, will return metadata which includes
+        # link[url], title[str], duration[float], tags[list]
+        link_holder = []
+        durations = []
+        tag_list = []
+        title_list = []
+
+        for pg_link in tqdm(self.page_links, total=self.config.num_pages):
+            page_driver = init_driver(pg_link)
+
+            scraped_file_data = self.get_links(page_driver)
+            titles = self.get_title(page_driver)
+            tags = self.get_tags(page_driver)
+
+            link_holder.extend(scraped_file_data["audio_links"])
+            durations.extend(scraped_file_data["duration"])
+            tag_list.extend(tags)
+            title_list.extend(titles)
+
+            page_driver.quit()
+
+        return {
+            "links": link_holder,
+            "title": title_list,
+            "durations": durations,
+            "tags": tag_list,
+        }
+
     def get_links(self, driver):
         section_links = driver.find_elements(By.CSS_SELECTOR, self.config.player_id)
 

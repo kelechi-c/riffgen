@@ -10,7 +10,6 @@ def init_driver(link: str):
     drive_opts = Options()
     drive_opts.add_argument("-headless")
     driver = webdriver.Firefox(options=drive_opts)
-    print("Driver init")
 
     # load page content
     driver.get(link)

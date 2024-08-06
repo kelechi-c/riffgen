@@ -3,4 +3,4 @@
 A tiny generative model for music. 
 
 #### architecture
-currently experimenting both DiTs(used in Stabiltiy AI's Stable Audio) and Transformers/SLMs(used in Meta's MusicGen)
+currently experimenting DiTs(Stabiltiy AI's Stable Audio). Partial/downsized implementation of the paper, 'Long-form music generation with latent diffusion'.

@@ -16,4 +16,5 @@ class scraper_config:
     mp3link_selector = "audio > source"
     title_selector = "h5.v-spacing-1 > a.bw-link--black"
     tag_selector = "a.tag-container"
+    tag_container = "div.bw-player__tags-list-height"
     pagination_links = "bw-pagination_container"

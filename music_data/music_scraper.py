@@ -29,13 +29,13 @@ class FreeSoundMusicScraper:
 
             scraped_file_data = self._get_links(page_driver)
             titles = self._get_title(page_driver)
-            # tags = self._get_tags(page_driver)
+            tags = self._get_tags(page_driver)
 
             link_holder.extend(scraped_file_data["audio_links"])
             durations.extend(scraped_file_data["duration"])
             file_list.extend(scraped_file_data["file_name"])
 
-            # tag_list.extend(tags)
+            tag_list.extend(tags)
             title_list.extend(titles)
 
             page_driver.quit()
@@ -47,7 +47,7 @@ class FreeSoundMusicScraper:
             "links": link_holder,
             "title": title_list,
             "durations": durations,
-            #             "tags": tag_list
+            "tags": tag_list,
         }
 
     def _get_links(self, driver):
@@ -81,12 +81,18 @@ class FreeSoundMusicScraper:
         return titles
 
     def _get_tags(self, driver):
-        tags_container = driver.find_elements(
-            By.CSS_SELECTOR, self.config.tag_selector)
+        tag_containers = driver.find_elements(
+            By.CSS_SELECTOR, self.config.tag_container
+        )
+        tag_dock = []
 
-        tags = [tag.text for tag in tags_container]
+        for cont in tag_containers:
+            tags = cont.find_elements(
+                By.CSS_SELECTOR, self.config.tag_selector)
+            tags = [t.text for t in tags]
+            tag_dock.append(tags)
 
-        return tags
+        return tag_dock
 
     def download_tracks(self, links):
         folder = self.config.outpath

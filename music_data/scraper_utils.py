@@ -17,18 +17,17 @@ def init_driver(link: str):
     return driver
 
 
-def audiofile_name(link: str):
+def audiofile_name(link: str, folder: str):
     fn = os.path.basename(link)
     file_name = fn.lower()
+    file_path = os.path.join(folder, file_name)
 
-    return file_name
+    return file_path
 
 
-def download_element(file_link, k, folder):
+def download_element(file_link, folder):
     response = requests.get(file_link, stream=True)
-    title = audiofile_name(file_link)
-    file_path = f"{title}_{k}.wav"
-    file_path = os.path.join(folder, file_path)
+    file_path = audiofile_name(file_link, folder)
 
     with open(file_path, "wb") as file:
         file.write(response.content)

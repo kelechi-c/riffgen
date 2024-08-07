@@ -3,6 +3,8 @@ from selenium.webdriver.common.by import By
 from scraper_utils import download_element, init_driver, audiofile_name
 from .config import scraper_config
 from tqdm.auto import tqdm
+from datasets import load_dataset, Audio
+from huggingface_hub import login
 import pandas as pd
 
 
@@ -35,7 +37,7 @@ class FreeSoundMusicScraper:
             durations.extend(scraped_file_data["duration"])
             file_list.extend(scraped_file_data["file_name"])
 
-            tag_list.extend(tags)
+            tag_list.append(tags)
             title_list.extend(titles)
 
             page_driver.quit()
@@ -104,14 +106,26 @@ class FreeSoundMusicScraper:
             download_element(link, folder)
 
 
-tori = FreeSoundMusicScraper()
-metadata = tori.page_crawler()
-print("link crawling complete")
+def scrape_data():
+    tori = FreeSoundMusicScraper()
+    metadata = tori.page_crawler()
+    print("link crawling complete")
 
-tori.download_tracks(metadata["links"])
-print("Download complete")
+    tori.download_tracks(metadata["links"])
+    print("Download complete")
 
-scraped_df = pd.DataFrame(metadata)
-scraped_df.drop()
+    return metadata
 
-scraped_df.to_csv("metadata.csv")
+
+def create_dataset(metadata: dict, folder: str):
+    metadata = scrape_data()
+    scraped_df = pd.DataFrame(metadata)
+    scraped_df.drop()
+
+    scraped_df.to_csv("metadata.csv")
+
+    login()
+    data = load_dataset("audiofolder", data_dir=folder)
+    data = data.cast_column("audio", Audio(sampling_rate=32000))
+    data = data.remove_columns("Unnamed: 0")
+    data.push_to_hub("tensorkelechi/vivy_audio")  # type: ignore

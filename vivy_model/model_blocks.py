@@ -1,3 +1,4 @@
+import math
 import torch
 from torch import nn
 
@@ -25,15 +26,38 @@ class SnakeBlock(nn.Module):
         return output
 
 
-# resnet_like layers/units
-class ResnetLayer(nn.Module):
-    def __init__(self, ch_in, ch_out):
+# conv blocks with weight norm
+class Conv1D_wn(nn.Module):
+    def __init__(self, *args, **kwargs):
         super().__init__()
+        self.conv = nn.Conv1d(*args, **kwargs)
+
+    def forward(self, x):
+        output = nn.utils.weight_norm(self.conv(x))
+
+        return output
+
+
+# resnet_like layers/units
+class ResLayer(nn.Module):
+    def __init__(self, ch_in: int, ch_out: int, dilation: int):
+        super().__init__()
+
+        self.dilation = dilation
+        padding = (dilation * (7 - 1)) // 2
+
         self.snake_conv_block = nn.Sequential(
             SnakeBlock(ch_out),
-            nn.Conv1d(ch_in, ch_out, kernel_size=7, stride=1, dilation=2),
+            Conv1D_wn(
+                ch_in,
+                ch_out,
+                kernel_size=7,
+                stride=1,
+                padding=padding,
+                dilation=dilation,
+            ),
             SnakeBlock(ch_out),
-            nn.Conv1d(ch_out, ch_out * 3, kernel_size=1, stride=1),
+            Conv1D_wn(ch_out, ch_out, kernel_size=1, stride=1),
         )
 
     def forward(self, x: torch.Tensor):
@@ -44,3 +68,26 @@ class ResnetLayer(nn.Module):
         x = self.conv2(x)
 
         return x + res_copy
+
+
+class EncoderBlock(nn.Module):
+    def __init__(self, in_ch, out_ch, stride):
+        super().__init__()
+        self.downsample_layer = nn.Sequential(
+            ResLayer(in_ch, in_ch, dilation=1),
+            ResLayer(in_ch, in_ch, dilation=3),
+            ResLayer(in_ch, in_ch, dilation=9),
+            SnakeBlock(in_ch),
+            Conv1D_wn(
+                in_ch,
+                out_ch,
+                kernel_size=2 * stride,
+                stride=stride,
+                padding=math.ceil(stride / 2),
+            ),
+        )
+
+    def forward(self, x):
+        x = self.downsample_layer(x)
+
+        return x
